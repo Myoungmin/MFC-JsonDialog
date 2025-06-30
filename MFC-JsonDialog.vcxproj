@@ -184,6 +184,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
+    <ClInclude Include="json.hpp" />
     <ClInclude Include="MFC-JsonDialog.h" />
     <ClInclude Include="MFC-JsonDialogDlg.h" />
     <ClInclude Include="pch.h" />
@@ -205,6 +206,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\MFCJsonDialog.rc2" />
+    <None Include="ui_definition.json" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\MFC-JsonDialog.ico" />

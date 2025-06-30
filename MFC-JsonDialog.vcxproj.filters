@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\nlohmann">
+      <UniqueIdentifier>{3bfa7963-1450-4181-9b8e-f6e0736fb7cd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MFC-JsonDialog.h">
@@ -32,6 +35,9 @@
     </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="json.hpp">
+      <Filter>Source Files\nlohmann</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -53,6 +59,9 @@
   <ItemGroup>
     <None Include="res\MFCJsonDialog.rc2">
       <Filter>Resource Files</Filter>
+    </None>
+    <None Include="ui_definition.json">
+      <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

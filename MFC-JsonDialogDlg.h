@@ -1,8 +1,8 @@
-
-// MFC-JsonDialogDlg.h : header file
-//
-
 #pragma once
+#include <map>
+#include <functional>
+#include "json.hpp"
+using json = nlohmann::json;
 
 
 // CMFCJsonDialogDlg dialog
@@ -27,8 +27,18 @@ protected:
 
 	// Generated message map functions
 	virtual BOOL OnInitDialog();
-	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
-	afx_msg void OnPaint();
-	afx_msg HCURSOR OnQueryDragIcon();
+	BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
+
+private:
+	std::map<CString, std::function<void()>> m_namedHandlers;
+	std::map<UINT, std::function<void()>> m_evtMap;
+
+	void LoadAndCreateUI();
+	void CreateControl(const json& ctrl, const CRect& rc);
+	UINT GetNextID();
+
+	// 실제 핸들러
+	void OnAction1() { AfxMessageBox(_T("Action1 호출")); }
+	void OnAction2() { AfxMessageBox(_T("Action2 호출")); }
 };

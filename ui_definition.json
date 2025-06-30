@@ -1,0 +1,86 @@
+{
+    "groups": [
+      {
+        "id": "ID_GROUP_1",
+        "title": "Test Group 1",
+        "widthSpec": { "type": "ratio", "value": 0.5 },
+        "heightSpec": { "type": "auto" },
+        "rows": [
+          {
+            "controls": [
+              {
+                "id": "IDC_STATIC_LABEL1",
+                "type": "Static",
+                "label": "Label 1",
+                "widthSpec": { "type": "ratio", "value": 0.3 }
+              },
+              {
+                "id": "IDC_EDIT_FIELD1",
+                "type": "Edit",
+                "default": "",
+                "placeholder": "Enter value",
+                "validation": "none",
+                "widthSpec": { "type": "ratio", "value": 0.5 }
+              },
+              {
+                "id": "IDC_BUTTON_ACTION1",
+                "type": "Button",
+                "label": "Action 1",
+                "onClick": "onAction1",
+                "widthSpec": { "type": "ratio", "value": 0.2 }
+              }
+            ]
+          },
+          {
+            "controls": [
+              {
+                "id": "IDC_STATIC_LABEL2",
+                "type": "Static",
+                "label": "Label 2",
+                "widthSpec": { "type": "ratio", "value": 0.3 }
+              },
+              {
+                "id": "IDC_COMBO_FIELD2",
+                "type": "Combo",
+                "default": "Option1",
+                "options": ["Option1", "Option2"],
+                "widthSpec": { "type": "ratio", "value": 0.5 }
+              },
+              {
+                "id": "IDC_BUTTON_ACTION2",
+                "type": "Button",
+                "label": "Action 2",
+                "onClick": "onAction2",
+                "widthSpec": { "type": "ratio", "value": 0.2 }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ID_GROUP_2",
+        "title": "Test Group 2",
+        "widthSpec": { "type": "ratio", "value": 0.5 },
+        "heightSpec": { "type": "auto" },
+        "rows": [
+          {
+            "controls": [
+              {
+                "id": "IDC_STATIC_LABEL3",
+                "type": "Static",
+                "label": "Label 3",
+                "widthSpec": { "type": "ratio", "value": 0.4 }
+              },
+              {
+                "id": "IDC_EDIT_FIELD3",
+                "type": "Edit",
+                "default": "Default",
+                "validation": "text",
+                "widthSpec": { "type": "ratio", "value": 0.6 }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
