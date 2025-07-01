@@ -81,7 +81,7 @@ void CMFCJsonDialogDlg::LoadAndCreateUI()
 
 	for (auto& grp : j["groups"]) {
 		// 그룹 너비: 전체 너비 * ratio  – (margin*2) → 좌우 여백 확보
-		int grpW = int(rc.Width() * grp["widthSpec"]["value"].get<double>()) - margin * 2;
+		int grpW = int((rc.Width() - margin * 3) * grp["widthSpec"]["value"].get<double>()) - margin * 2;
 		int yOff = margin;  // 위쪽 여백
 
 		// 그룹 전체 높이: 타이틀 + 각 행 높이 + 간격 + 아래 여백
@@ -114,8 +114,8 @@ void CMFCJsonDialogDlg::LoadAndCreateUI()
 			y += rowH + vSpacing;
 		}
 
-		// 다음 그룹은 (이 그룹 너비 + 가로 바깥 여백*2 + 그룹 간격) 만큼 떨어뜨려서 배치
-		xOff += grpW + margin * 2 + hSpacing;
+		// 다음 그룹은 (이 그룹 너비 + 가로 바깥 여백 * 2.5 + 그룹 간격) 만큼 떨어뜨려서 배치
+		xOff += grpW + margin * 2.5 + hSpacing;
 	}
 }
 
