@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "framework.h"
 #include "MFC-JsonDialog.h"
 #include "MFC-JsonDialogDlg.h"
@@ -34,11 +34,13 @@ BOOL CMFCJsonDialogDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
-	// 1) ���ڿ����Լ� ���̺� ���
+	SetWindowPos(nullptr, 0, 0, 1000, 600, SWP_NOMOVE | SWP_NOZORDER);
+
+	// 1) 함수 테이블 등록
 	m_namedHandlers[_T("onAction1")] = [this]() { OnAction1(); };
 	m_namedHandlers[_T("onAction2")] = [this]() { OnAction2(); };
 
-	// 2) JSON �Ľ� �� UI ����
+	// 2) JSON 파싱 및 UI 생성
 	LoadAndCreateUI();
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
@@ -60,36 +62,60 @@ BOOL CMFCJsonDialogDlg::OnCommand(WPARAM wParam, LPARAM lParam)
 
 void CMFCJsonDialogDlg::LoadAndCreateUI()
 {
-	std::ifstream ifs(_T("ui_definition.json"));
+	std::ifstream ifs("ui_definition.json");
+	if (!ifs.is_open()) {
+		AfxMessageBox(_T("ui_definition.json 파일을 열 수 없습니다."));
+		return;
+	}
 	json j; ifs >> j;
 
 	CRect rc; GetClientRect(&rc);
-	int xOff = 0;
+	const int margin = 15;   // 바깥·안쪽 여백
+	const int titleH = 20;   // 그룹 타이틀 높이
+	const int rowH = 24;   // 컨트롤 높이
+	const int vSpacing = 5;    // 행 간격
+	const int hSpacing = 5;    // 열 간격
+
+	// 첫 그룹 시작 X 좌표에 바깥 여백 추가
+	int xOff = margin;
 
 	for (auto& grp : j["groups"]) {
-		int grpW = int(rc.Width() * grp["widthSpec"]["value"].get<double>());
-		int y = 10;
+		// 그룹 너비: 전체 너비 * ratio  – (margin*2) → 좌우 여백 확보
+		int grpW = int(rc.Width() * grp["widthSpec"]["value"].get<double>()) - margin * 2;
+		int yOff = margin;  // 위쪽 여백
 
-		// �׷� Ÿ��Ʋ
-		CStatic* title = new CStatic;
-		UINT tid = GetNextID();
-		std::string groupTitleStr = grp["title"].get<std::string>();
-		CString groupTitle(groupTitleStr.c_str());
-		title->Create(groupTitle, WS_CHILD | WS_VISIBLE,
-			CRect(xOff, y, xOff + grpW, y + 20), this, tid);
-		y += 30;
+		// 그룹 전체 높이: 타이틀 + 각 행 높이 + 간격 + 아래 여백
+		int totalRows = grp["rows"].size();
+		int grpH = titleH + vSpacing
+			+ totalRows * (rowH + vSpacing)
+			+ margin;
 
-		// �� ��(Row)
+		// 그룹 박스
+		CString cTitle(grp["title"].get<std::string>().c_str());
+		CButton* box = new CButton;
+		box->Create(
+			cTitle,
+			WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
+			CRect(xOff, yOff, xOff + grpW + margin * 2, yOff + grpH),  // 그룹 너비에 좌우 margin*2 보정
+			this,
+			GetNextID()
+		);
+
+		// 내부 컨트롤 배치
+		int y = yOff + titleH + vSpacing;
 		for (auto& row : grp["rows"]) {
-			int x = xOff;
+			int x = xOff + margin;  // 그룹 박스 안쪽 왼쪽 여백
 			for (auto& ctrl : row["controls"]) {
-				int cw = int(grpW * ctrl["widthSpec"]["value"].get<double>());
-				CreateControl(ctrl, CRect(x, y, x + cw, y + 24));
-				x += cw + 5;
+				double wRatio = ctrl["widthSpec"]["value"].get<double>();
+				int    cw = int(grpW * wRatio);
+				CreateControl(ctrl, CRect(x, y, x + cw, y + rowH));
+				x += cw + hSpacing;
 			}
-			y += 29;
+			y += rowH + vSpacing;
 		}
-		xOff += grpW + 10;
+
+		// 다음 그룹은 (이 그룹 너비 + 가로 바깥 여백*2 + 그룹 간격) 만큼 떨어뜨려서 배치
+		xOff += grpW + margin * 2 + hSpacing;
 	}
 }
 
@@ -139,15 +165,15 @@ void CMFCJsonDialogDlg::CreateControl(const json& ctrl, const CRect& rc)
 
 UINT CMFCJsonDialogDlg::GetNextID()
 {
-	// ���� ���ҽ� ID�� 1~32767 ������ ���ϴ�.
-	// 10000~65535 �߿��� ������ ���� ID�� ã��
+	// 보통 리소스 ID는 1~32767 범위를 씁니다.
+	// 10000~65535 중에서 사용되지 않은 ID를 찾음
 	for (UINT id = 10000; id < 65535; ++id) {
 		if (GetDlgItem(id) == nullptr) {
 			return id;
 		}
 	}
-	// ���� �� ã���� ����ó�� �ʿ�
-	AfxMessageBox(_T("��� ������ ID�� �����ϴ�."));
+	// 만약 못 찾으면 예외처리 필요
+	AfxMessageBox(_T("사용 가능한 ID가 없습니다."));
 	return (UINT)-1;
 }
 
