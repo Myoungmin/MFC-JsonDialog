@@ -36,6 +36,7 @@ private:
 
 	void LoadAndCreateUI();
 	void CreateControl(const json& ctrl, const CRect& rc);
+	int CalcGroupHeight(const json& group, int rowH, int titleH, int vSpacing);
 	UINT GetNextID();
 
 	// 실제 핸들러

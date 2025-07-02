@@ -9,6 +9,11 @@
 #define new DEBUG_NEW
 #endif
 
+const int margin = 15;   // 바깥·안쪽 여백
+const int titleH = 20;   // 그룹 타이틀 높이
+const int rowH = 24;   // 컨트롤 높이
+const int vSpacing = 5;    // 행 간격
+const int hSpacing = 5;    // 열 간격
 
 CMFCJsonDialogDlg::CMFCJsonDialogDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_MFCJSONDIALOG_DIALOG, pParent)
@@ -70,25 +75,16 @@ void CMFCJsonDialogDlg::LoadAndCreateUI()
 	json j; ifs >> j;
 
 	CRect rc; GetClientRect(&rc);
-	const int margin = 15;   // 바깥·안쪽 여백
-	const int titleH = 20;   // 그룹 타이틀 높이
-	const int rowH = 24;   // 컨트롤 높이
-	const int vSpacing = 5;    // 행 간격
-	const int hSpacing = 5;    // 열 간격
+	
 
 	// 첫 그룹 시작 X 좌표에 바깥 여백 추가
 	int xOff = margin;
 
 	for (auto& grp : j["groups"]) {
-		// 그룹 너비: 전체 너비 * ratio  – (margin*2) → 좌우 여백 확보
 		int grpW = int((rc.Width() - margin * 3) * grp["widthSpec"]["value"].get<double>()) - margin * 2;
 		int yOff = margin;  // 위쪽 여백
 
-		// 그룹 전체 높이: 타이틀 + 각 행 높이 + 간격 + 아래 여백
-		int totalRows = grp["rows"].size();
-		int grpH = titleH + vSpacing
-			+ totalRows * (rowH + vSpacing)
-			+ margin;
+		int grpH = CalcGroupHeight(grp, rowH, titleH, vSpacing);
 
 		// 그룹 박스
 		CString cTitle(grp["title"].get<std::string>().c_str());
@@ -96,7 +92,7 @@ void CMFCJsonDialogDlg::LoadAndCreateUI()
 		box->Create(
 			cTitle,
 			WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
-			CRect(xOff, yOff, xOff + grpW + margin * 2, yOff + grpH),  // 그룹 너비에 좌우 margin*2 보정
+			CRect(xOff, yOff, xOff + grpW, yOff + grpH),
 			this,
 			GetNextID()
 		);
@@ -104,18 +100,25 @@ void CMFCJsonDialogDlg::LoadAndCreateUI()
 		// 내부 컨트롤 배치
 		int y = yOff + titleH + vSpacing;
 		for (auto& row : grp["rows"]) {
-			int x = xOff + margin;  // 그룹 박스 안쪽 왼쪽 여백
+			int x = xOff + margin;
+			int maxRowH = rowH;
+			for (auto& ctrl : row["controls"]) {
+				int ctrlH = rowH;
+				if (ctrl["type"] == "Group")
+					ctrlH = CalcGroupHeight(ctrl, rowH, titleH, vSpacing);
+				if (ctrlH > maxRowH)
+					maxRowH = ctrlH;
+			}
 			for (auto& ctrl : row["controls"]) {
 				double wRatio = ctrl["widthSpec"]["value"].get<double>();
-				int    cw = int(grpW * wRatio);
-				CreateControl(ctrl, CRect(x, y, x + cw, y + rowH));
+				int cw = int((grpW - margin * 2) * wRatio);
+				CreateControl(ctrl, CRect(x, y, x + cw, y + maxRowH));
 				x += cw + hSpacing;
 			}
-			y += rowH + vSpacing;
+			y += maxRowH + vSpacing;
 		}
 
-		// 다음 그룹은 (이 그룹 너비 + 가로 바깥 여백 * 2.5 + 그룹 간격) 만큼 떨어뜨려서 배치
-		xOff += grpW + margin * 2.5 + hSpacing;
+		xOff += grpW + hSpacing;
 	}
 }
 
@@ -160,7 +163,61 @@ void CMFCJsonDialogDlg::CreateControl(const json& ctrl, const CRect& rc)
 		if (it != m_namedHandlers.end())
 			m_evtMap[id] = it->second;
 	}
+	else if (type == _T("Group")) {
+		// 중첩 그룹의 실제 높이 계산
+		int groupH = CalcGroupHeight(ctrl, rowH, titleH, vSpacing);
+		int groupW = rc.Width();
 
+		// 그룹 박스 그리기
+		CString gTitle(ctrl["title"].get<std::string>().c_str());
+		CButton* box = new CButton;
+		box->Create(
+			gTitle,
+			WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
+			rc,
+			this,
+			id
+		);
+
+		int innerW = rc.Width() - margin * 2;
+		int y = rc.top + titleH + vSpacing;
+
+		for (auto& row : ctrl["rows"]) {
+			int maxRowH = rowH;
+			for (auto& c : row["controls"]) {
+				int ctrlH = rowH;
+				if (c["type"] == "Group")
+					ctrlH = CalcGroupHeight(c, rowH, titleH, vSpacing);
+				if (ctrlH > maxRowH)
+					maxRowH = ctrlH;
+			}
+			int x = rc.left + margin;
+			for (auto& c : row["controls"]) {
+				double wRatio = c["widthSpec"]["value"].get<double>();
+				int cw = int(innerW * wRatio);
+				CreateControl(c, CRect(x, y, x + cw, y + maxRowH));
+				x += cw + hSpacing;
+			}
+			y += maxRowH + vSpacing;
+		}
+	}
+}
+
+int CMFCJsonDialogDlg::CalcGroupHeight(const json& group, int rowH, int titleH, int vSpacing)
+{
+	int totalH = titleH + vSpacing;
+	for (auto& row : group["rows"]) {
+		int maxRowH = rowH;
+		for (auto& ctrl : row["controls"]) {
+			if (ctrl["type"] == "Group") {
+				int groupH = CalcGroupHeight(ctrl, rowH, titleH, vSpacing);
+				if (groupH > maxRowH)
+					maxRowH = groupH;
+			}
+		}
+		totalH += maxRowH + vSpacing;
+	}
+	return totalH;
 }
 
 UINT CMFCJsonDialogDlg::GetNextID()
