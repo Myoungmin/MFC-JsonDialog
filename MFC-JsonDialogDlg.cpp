@@ -42,8 +42,8 @@ BOOL CMFCJsonDialogDlg::OnInitDialog()
 	SetWindowPos(nullptr, 0, 0, 1000, 600, SWP_NOMOVE | SWP_NOZORDER);
 
 	// 1) 함수 테이블 등록
-	m_namedHandlers[_T("onAction1")] = [this]() { OnAction1(); };
-	m_namedHandlers[_T("onAction2")] = [this]() { OnAction2(); };
+	m_namedHandlers[_T("onAction1")] = [this](UINT id) { OnAction1(id); };
+	m_namedHandlers[_T("onAction2")] = [this](UINT id) { OnAction2(id); };
 
 	// 2) JSON 파싱 및 UI 생성
 	LoadAndCreateUI();
@@ -55,14 +55,15 @@ BOOL CMFCJsonDialogDlg::OnCommand(WPARAM wParam, LPARAM lParam)
 {
 	UINT id = LOWORD(wParam);
 	UINT code = HIWORD(wParam);
+
 	if (code == BN_CLICKED) {
 		auto it = m_evtMap.find(id);
 		if (it != m_evtMap.end()) {
-			it->second();
+			it->second(id);
 			return TRUE;
 		}
 	}
-	return CDialogEx::OnCommand(wParam, 0);
+	return CDialogEx::OnCommand(wParam, lParam);
 }
 
 void CMFCJsonDialogDlg::LoadAndCreateUI()
@@ -109,23 +110,35 @@ void CMFCJsonDialogDlg::LoadAndCreateUI()
 				if (ctrlH > maxRowH)
 					maxRowH = ctrlH;
 			}
+			std::vector<UINT> rowIDs;
 			for (auto& ctrl : row["controls"]) {
 				double wRatio = ctrl["widthSpec"]["value"].get<double>();
 				int cw = int((grpW - margin * 2) * wRatio);
-				CreateControl(ctrl, CRect(x, y, x + cw, y + maxRowH));
+				UINT id = GetNextID();
+				rowIDs.push_back(id);
+				CreateControl(ctrl, CRect(x, y, x + cw, y + maxRowH), id, rowIDs);
 				x += cw + hSpacing;
 			}
 			y += maxRowH + vSpacing;
+
+			// Row 내 Button에 대해 Row 전체 ID 저장
+			for (size_t i = 0; i < row["controls"].size(); ++i) {
+				const auto& ctrl = row["controls"][i];
+				if (ctrl["type"] == "Button") {
+					UINT btnID = rowIDs[i];
+					m_rowMap[btnID] = rowIDs;
+				}
+			}
 		}
 
 		xOff += grpW + hSpacing;
 	}
 }
 
-void CMFCJsonDialogDlg::CreateControl(const json& ctrl, const CRect& rc)
+void CMFCJsonDialogDlg::CreateControl(const json& ctrl, const CRect& rc, UINT id, std::vector<UINT>& rowIDs)
 {
 	CString type(ctrl["type"].get<std::string>().c_str());
-	UINT    id = GetNextID();
+	//UINT    id = GetNextID();
 
 	if (type == _T("Static")) {
 		std::string labelStr = ctrl["label"].get<std::string>();
@@ -192,11 +205,22 @@ void CMFCJsonDialogDlg::CreateControl(const json& ctrl, const CRect& rc)
 					maxRowH = ctrlH;
 			}
 			int x = rc.left + margin;
+			std::vector<UINT> rowIDs;
 			for (auto& c : row["controls"]) {
 				double wRatio = c["widthSpec"]["value"].get<double>();
 				int cw = int(innerW * wRatio);
-				CreateControl(c, CRect(x, y, x + cw, y + maxRowH));
+				UINT childID = GetNextID();
+				rowIDs.push_back(childID);
+				CreateControl(c, CRect(x, y, x + cw, y + maxRowH), childID, rowIDs);
 				x += cw + hSpacing;
+			}
+			// Row 내 Button에 대해 Row 전체 ID 저장
+			for (size_t i = 0; i < row["controls"].size(); ++i) {
+				const auto& c = row["controls"][i];
+				if (c["type"] == "Button") {
+					UINT btnID = rowIDs[i];
+					m_rowMap[btnID] = rowIDs;
+				}
 			}
 			y += maxRowH + vSpacing;
 		}
@@ -234,3 +258,42 @@ UINT CMFCJsonDialogDlg::GetNextID()
 	return (UINT)-1;
 }
 
+void CMFCJsonDialogDlg::OnAction1(UINT btnID)
+{
+	CString msg;
+	auto it = m_rowMap.find(btnID);
+	if (it != m_rowMap.end()) {
+		for (UINT cid : it->second) {
+			CWnd* pWnd = GetDlgItem(cid);
+			if (!pWnd) continue;
+
+			if (auto pEdit = dynamic_cast<CEdit*>(pWnd)) {
+				CString text; pEdit->GetWindowText(text);
+				msg += _T("Edit: ") + text + _T("\n");
+			}
+			else if (auto pCombo = dynamic_cast<CComboBox*>(pWnd)) {
+				int sel = pCombo->GetCurSel();
+				if (sel != CB_ERR) {
+					CString selText;
+					pCombo->GetLBText(sel, selText);
+					msg += _T("Combo: ") + selText + _T("\n");
+				}
+			}
+			else if (auto pBtn = dynamic_cast<CButton*>(pWnd)) {
+				// 체크박스만
+				if ((pBtn->GetStyle() & BS_CHECKBOX) == BS_CHECKBOX) {
+					int state = pBtn->GetCheck();
+					msg += _T("Check: ") + CString(state ? _T("Checked") : _T("Unchecked")) + _T("\n");
+				}
+			}
+		}
+	}
+	if (msg.IsEmpty())
+		msg = _T("Row 내에 값이 없습니다.");
+	AfxMessageBox(msg);
+}
+
+void CMFCJsonDialogDlg::OnAction2(UINT btnID)
+{
+	OnAction1(btnID);
+}

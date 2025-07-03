@@ -31,15 +31,17 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-	std::map<CString, std::function<void()>> m_namedHandlers;
-	std::map<UINT, std::function<void()>> m_evtMap;
+	std::map<CString, std::function<void(UINT)>> m_namedHandlers;
+	std::map<UINT, std::function<void(UINT)>> m_evtMap;
+
+	std::map<UINT, std::vector<UINT>> m_rowMap;
 
 	void LoadAndCreateUI();
-	void CreateControl(const json& ctrl, const CRect& rc);
+	void CreateControl(const json& ctrl, const CRect& rc, UINT id, std::vector<UINT>& rowIDs);
 	int CalcGroupHeight(const json& group, int rowH, int titleH, int vSpacing);
 	UINT GetNextID();
 
 	// 실제 핸들러
-	void OnAction1() { AfxMessageBox(_T("Action1 호출")); }
-	void OnAction2() { AfxMessageBox(_T("Action2 호출")); }
+	void OnAction1(UINT btnID);
+	void OnAction2(UINT btnID);
 };
