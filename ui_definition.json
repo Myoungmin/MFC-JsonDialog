@@ -24,8 +24,6 @@
               "id": "IDC_EDIT_FIELD1",
               "type": "Edit",
               "default": "",
-              "placeholder": "Enter value",
-              "validation": "none",
               "widthSpec": {
                 "type": "ratio",
                 "value": 0.5
@@ -192,7 +190,6 @@
               "id": "IDC_EDIT_FIELD3",
               "type": "Edit",
               "default": "Default",
-              "validation": "text",
               "widthSpec": {
                 "type": "ratio",
                 "value": 0.6
