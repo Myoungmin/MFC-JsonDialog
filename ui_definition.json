@@ -203,6 +203,7 @@
               "id": "IDC_CHECK_OPTION",
               "type": "Check",
               "label": "Enable Option",
+              "default": true,
               "widthSpec": {
                 "type": "ratio",
                 "value": 1.0

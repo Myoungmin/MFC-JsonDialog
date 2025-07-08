@@ -176,6 +176,18 @@ void CMFCJsonDialogDlg::CreateControl(const json& ctrl, const CRect& rc, UINT id
 		if (it != m_namedHandlers.end())
 			m_evtMap[id] = it->second;
 	}
+	else if (type == _T("Check")) {
+		std::string labelStr = ctrl["label"].get<std::string>();
+		CString label(labelStr.c_str());
+		CButton* chk = new CButton;
+		chk->Create(
+			label,
+			WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
+			rc, this, id
+		);
+		if (ctrl.contains("default") && ctrl["default"].get<bool>())
+			chk->SetCheck(BST_CHECKED);
+	}
 	else if (type == _T("Group")) {
 		// 중첩 그룹의 실제 높이 계산
 		int groupH = CalcGroupHeight(ctrl, rowH, titleH, vSpacing);
