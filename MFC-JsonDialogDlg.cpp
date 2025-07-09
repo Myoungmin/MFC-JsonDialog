@@ -42,8 +42,9 @@ BOOL CMFCJsonDialogDlg::OnInitDialog()
 	SetWindowPos(nullptr, 0, 0, 1000, 600, SWP_NOMOVE | SWP_NOZORDER);
 
 	// 1) 함수 테이블 등록
-	m_namedHandlers[_T("onAction1")] = [this](UINT id) { OnAction1(id); };
-	m_namedHandlers[_T("onAction2")] = [this](UINT id) { OnAction2(id); };
+	m_namedHandlers[_T("onAction1")] = [this](UINT id) { OnAction(id); };
+	m_namedHandlers[_T("onAction2")] = [this](UINT id) { OnAction(id); };
+	m_namedHandlers[_T("onAction3")] = [this](UINT id) { OnAction(id); };
 
 	// 2) JSON 파싱 및 UI 생성
 	LoadAndCreateUI();
@@ -137,8 +138,10 @@ void CMFCJsonDialogDlg::LoadAndCreateUI()
 
 void CMFCJsonDialogDlg::CreateControl(const json& ctrl, const CRect& rc, UINT id, std::vector<UINT>& rowIDs)
 {
+	CString jsonID(ctrl["id"].get<std::string>().c_str());
+	m_idMap[jsonID] = id;
+
 	CString type(ctrl["type"].get<std::string>().c_str());
-	//UINT    id = GetNextID();
 
 	if (type == _T("Static")) {
 		std::string labelStr = ctrl["label"].get<std::string>();
@@ -270,7 +273,7 @@ UINT CMFCJsonDialogDlg::GetNextID()
 	return (UINT)-1;
 }
 
-void CMFCJsonDialogDlg::OnAction1(UINT btnID)
+void CMFCJsonDialogDlg::OnAction(UINT btnID)
 {
 	CString msg;
 	auto it = m_rowMap.find(btnID);
@@ -302,10 +305,19 @@ void CMFCJsonDialogDlg::OnAction1(UINT btnID)
 	}
 	if (msg.IsEmpty())
 		msg = _T("Row 내에 값이 없습니다.");
-	AfxMessageBox(msg);
-}
 
-void CMFCJsonDialogDlg::OnAction2(UINT btnID)
-{
-	OnAction1(btnID);
+	for (const auto& pair : m_idMap) {
+		if (pair.second == btnID) {
+			CString jsonID = pair.first;
+			if (jsonID == _T("IDC_BUTTON_ACTION1"))
+				msg += _T("\n[Action1] 버튼이 클릭되었습니다.");
+			else if (jsonID == _T("IDC_BUTTON_ACTION2"))
+				msg += _T("\n[Action2] 버튼이 클릭되었습니다.");
+			else if (jsonID == _T("IDC_BUTTON_ACTION3"))
+				msg += _T("\n[Action3] 버튼이 클릭되었습니다.");
+			break;
+		}
+	}
+
+	AfxMessageBox(msg);
 }

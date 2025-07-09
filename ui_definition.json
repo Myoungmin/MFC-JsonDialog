@@ -206,7 +206,17 @@
               "default": true,
               "widthSpec": {
                 "type": "ratio",
-                "value": 1.0
+                "value": 0.7
+              }
+            },
+            {
+              "id": "IDC_BUTTON_ACTION3",
+              "type": "Button",
+              "label": "Action 3",
+              "onClick": "onAction3",
+              "widthSpec": {
+                "type": "ratio",
+                "value": 0.3
               }
             }
           ]

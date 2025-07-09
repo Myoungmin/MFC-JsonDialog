@@ -35,6 +35,7 @@ private:
 	std::map<UINT, std::function<void(UINT)>> m_evtMap;
 
 	std::map<UINT, std::vector<UINT>> m_rowMap;
+	std::map<CString, UINT> m_idMap;
 
 	void LoadAndCreateUI();
 	void CreateControl(const json& ctrl, const CRect& rc, UINT id, std::vector<UINT>& rowIDs);
@@ -42,6 +43,5 @@ private:
 	UINT GetNextID();
 
 	// 실제 핸들러
-	void OnAction1(UINT btnID);
-	void OnAction2(UINT btnID);
+	void OnAction(UINT btnID);
 };
