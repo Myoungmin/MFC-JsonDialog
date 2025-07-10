@@ -21,6 +21,18 @@ CMFCJsonDialogDlg::CMFCJsonDialogDlg(CWnd* pParent /*=nullptr*/)
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
+CMFCJsonDialogDlg::~CMFCJsonDialogDlg()
+{
+	for (CWnd* pCtrl : m_dynCtrls)
+	{
+		if (pCtrl->GetSafeHwnd())
+			pCtrl->DestroyWindow();
+
+		delete pCtrl;
+	}
+	m_dynCtrls.clear();
+}
+
 void CMFCJsonDialogDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
@@ -98,6 +110,7 @@ void CMFCJsonDialogDlg::LoadAndCreateUI()
 			this,
 			GetNextID()
 		);
+		m_dynCtrls.push_back(box);
 
 		// 내부 컨트롤 배치
 		int y = yOff + titleH + vSpacing;
@@ -148,10 +161,12 @@ void CMFCJsonDialogDlg::CreateControl(const json& ctrl, const CRect& rc, UINT id
 		CString label(labelStr.c_str());
 		CStatic* s = new CStatic;
 		s->Create(label, WS_CHILD | WS_VISIBLE, rc, this, id);
+		m_dynCtrls.push_back(s);
 	}
 	else if (type == _T("Edit")) {
 		CEdit* e = new CEdit;
 		e->Create(WS_CHILD | WS_VISIBLE | WS_BORDER, rc, this, id);
+		m_dynCtrls.push_back(e);
 		std::string defStr = ctrl.value("default", std::string(""));
 		CString def(defStr.c_str());
 		e->SetWindowText(def);
@@ -159,6 +174,7 @@ void CMFCJsonDialogDlg::CreateControl(const json& ctrl, const CRect& rc, UINT id
 	else if (type == _T("Combo")) {
 		CComboBox* cb = new CComboBox;
 		cb->Create(WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST, rc, this, id);
+		m_dynCtrls.push_back(cb);
 		for (auto& opt : ctrl["options"]) {
 			std::string optStr = opt.get<std::string>();
 			CString optCStr(optStr.c_str());
@@ -173,6 +189,7 @@ void CMFCJsonDialogDlg::CreateControl(const json& ctrl, const CRect& rc, UINT id
 		CString label(labelStr.c_str());
 		CButton* b = new CButton;
 		b->Create(label, WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, rc, this, id);
+		m_dynCtrls.push_back(b);
 		std::string evtStr = ctrl.value("onClick", std::string(""));
 		CString evt(evtStr.c_str());
 		auto it = m_namedHandlers.find(evt);
@@ -188,6 +205,7 @@ void CMFCJsonDialogDlg::CreateControl(const json& ctrl, const CRect& rc, UINT id
 			WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
 			rc, this, id
 		);
+		m_dynCtrls.push_back(chk);
 		if (ctrl.contains("default") && ctrl["default"].get<bool>())
 			chk->SetCheck(BST_CHECKED);
 	}
@@ -206,6 +224,7 @@ void CMFCJsonDialogDlg::CreateControl(const json& ctrl, const CRect& rc, UINT id
 			this,
 			id
 		);
+		m_dynCtrls.push_back(box);
 
 		int innerW = rc.Width() - margin * 2;
 		int y = rc.top + titleH + vSpacing;

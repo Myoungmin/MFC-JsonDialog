@@ -11,6 +11,7 @@ class CMFCJsonDialogDlg : public CDialogEx
 // Construction
 public:
 	CMFCJsonDialogDlg(CWnd* pParent = nullptr);	// standard constructor
+	~CMFCJsonDialogDlg();
 
 // Dialog Data
 #ifdef AFX_DESIGN_TIME
@@ -31,6 +32,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
+	std::vector<CWnd*> m_dynCtrls;
+
 	std::map<CString, std::function<void(UINT)>> m_namedHandlers;
 	std::map<UINT, std::function<void(UINT)>> m_evtMap;
 
