@@ -101,7 +101,7 @@ void CMFCJsonDialogDlg::LoadAndCreateUI()
 		int grpH = CalcGroupHeight(grp, rowH, titleH, vSpacing);
 
 		// 그룹 박스
-		CString cTitle(grp["title"].get<std::string>().c_str());
+		CString cTitle(UTF8ToWide(grp["title"].get<std::string>()).c_str());
 		CButton* box = new CButton;
 		box->Create(
 			cTitle,
@@ -151,14 +151,14 @@ void CMFCJsonDialogDlg::LoadAndCreateUI()
 
 void CMFCJsonDialogDlg::CreateControl(const json& ctrl, const CRect& rc, UINT id, std::vector<UINT>& rowIDs)
 {
-	CString jsonID(ctrl["id"].get<std::string>().c_str());
+	CString jsonID(UTF8ToWide(ctrl["id"].get<std::string>()).c_str());
 	m_idMap[jsonID] = id;
 
-	CString type(ctrl["type"].get<std::string>().c_str());
+	CString type(UTF8ToWide(ctrl["type"].get<std::string>()).c_str());
 
 	if (type == _T("Static")) {
 		std::string labelStr = ctrl["label"].get<std::string>();
-		CString label(labelStr.c_str());
+		CString label(UTF8ToWide(labelStr).c_str());
 		CStatic* s = new CStatic;
 		s->Create(label, WS_CHILD | WS_VISIBLE, rc, this, id);
 		m_dynCtrls.push_back(s);
@@ -168,7 +168,7 @@ void CMFCJsonDialogDlg::CreateControl(const json& ctrl, const CRect& rc, UINT id
 		e->Create(WS_CHILD | WS_VISIBLE | WS_BORDER, rc, this, id);
 		m_dynCtrls.push_back(e);
 		std::string defStr = ctrl.value("default", std::string(""));
-		CString def(defStr.c_str());
+		CString def(UTF8ToWide(defStr).c_str());
 		e->SetWindowText(def);
 	}
 	else if (type == _T("Combo")) {
@@ -177,28 +177,28 @@ void CMFCJsonDialogDlg::CreateControl(const json& ctrl, const CRect& rc, UINT id
 		m_dynCtrls.push_back(cb);
 		for (auto& opt : ctrl["options"]) {
 			std::string optStr = opt.get<std::string>();
-			CString optCStr(optStr.c_str());
+			CString optCStr(UTF8ToWide(optStr).c_str());
 			cb->AddString(optCStr);
 		}
 		std::string defStr = ctrl.value("default", std::string(""));
-		CString def(defStr.c_str());
+		CString def(UTF8ToWide(defStr).c_str());
 		cb->SetCurSel(cb->FindStringExact(-1, def));
 	}
 	else if (type == _T("Button")) {
 		std::string labelStr = ctrl["label"].get<std::string>();
-		CString label(labelStr.c_str());
+		CString label(UTF8ToWide(labelStr).c_str());
 		CButton* b = new CButton;
 		b->Create(label, WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, rc, this, id);
 		m_dynCtrls.push_back(b);
 		std::string evtStr = ctrl.value("onClick", std::string(""));
-		CString evt(evtStr.c_str());
+		CString evt(UTF8ToWide(evtStr).c_str());
 		auto it = m_namedHandlers.find(evt);
 		if (it != m_namedHandlers.end())
 			m_evtMap[id] = it->second;
 	}
 	else if (type == _T("Check")) {
 		std::string labelStr = ctrl["label"].get<std::string>();
-		CString label(labelStr.c_str());
+		CString label(UTF8ToWide(labelStr).c_str());
 		CButton* chk = new CButton;
 		chk->Create(
 			label,
@@ -210,12 +210,9 @@ void CMFCJsonDialogDlg::CreateControl(const json& ctrl, const CRect& rc, UINT id
 			chk->SetCheck(BST_CHECKED);
 	}
 	else if (type == _T("Group")) {
-		// 중첩 그룹의 실제 높이 계산
 		int groupH = CalcGroupHeight(ctrl, rowH, titleH, vSpacing);
 		int groupW = rc.Width();
-
-		// 그룹 박스 그리기
-		CString gTitle(ctrl["title"].get<std::string>().c_str());
+		CString gTitle(UTF8ToWide(ctrl["title"].get<std::string>()).c_str());
 		CButton* box = new CButton;
 		box->Create(
 			gTitle,
@@ -339,4 +336,15 @@ void CMFCJsonDialogDlg::OnAction(UINT btnID)
 	}
 
 	AfxMessageBox(msg);
+}
+
+std::wstring CMFCJsonDialogDlg::UTF8ToWide(const std::string& utf8)
+{
+	if (utf8.empty()) return std::wstring();
+	int size_needed = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), -1, NULL, 0);
+	std::wstring wstrTo(size_needed, 0);
+	MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), -1, &wstrTo[0], size_needed);
+	// CString에는 널문자가 자동 추가되므로, 마지막 문자 제거
+	if (!wstrTo.empty() && wstrTo.back() == 0) wstrTo.pop_back();
+	return wstrTo;
 }
