@@ -57,6 +57,7 @@ BOOL CMFCJsonDialogDlg::OnInitDialog()
 	m_namedHandlers[_T("onAction1")] = [this](UINT id) { OnAction(id); };
 	m_namedHandlers[_T("onAction2")] = [this](UINT id) { OnAction(id); };
 	m_namedHandlers[_T("onAction3")] = [this](UINT id) { OnAction(id); };
+	m_namedHandlers[_T("onCalc")] = [this](UINT id) { OnCalc(id); };
 
 	// 2) JSON 파싱 및 UI 생성
 	LoadAndCreateUI();
@@ -336,6 +337,34 @@ void CMFCJsonDialogDlg::OnAction(UINT btnID)
 	}
 
 	AfxMessageBox(msg);
+}
+
+void CMFCJsonDialogDlg::OnCalc(UINT btnID)
+{
+	UINT idMass = m_idMap[_T("IDC_EDIT_MASS")];
+	UINT idAcc = m_idMap[_T("IDC_EDIT_ACC")];
+	UINT idForce = m_idMap[_T("IDC_EDIT_FORCE")];
+
+	CString strMass, strAcc;
+	double mass = 0, acc = 0;
+
+	if (auto pEditMass = dynamic_cast<CEdit*>(GetDlgItem(idMass))) {
+		pEditMass->GetWindowText(strMass);
+		mass = _tstof(strMass);
+	}
+	if (auto pEditAcc = dynamic_cast<CEdit*>(GetDlgItem(idAcc))) {
+		pEditAcc->GetWindowText(strAcc);
+		acc = _tstof(strAcc);
+	}
+
+	double force = mass * acc;
+
+	CString strForce;
+	strForce.Format(_T("%.4f"), force);
+
+	if (auto pEditForce = dynamic_cast<CEdit*>(GetDlgItem(idForce))) {
+		pEditForce->SetWindowText(strForce);
+	}
 }
 
 std::wstring CMFCJsonDialogDlg::UTF8ToWide(const std::string& utf8)

@@ -213,6 +213,98 @@
               }
             }
           ]
+        },
+        {
+          "controls": [
+            {
+              "id": "ID_GROUP_FMA",
+              "type": "Group",
+              "title": "F = m × a 계산기",
+              "widthSpec": {
+                "type": "ratio",
+                "value": 1.0
+              },
+              "heightSpec": { "type": "auto" },
+              "rows": [
+                {
+                  "controls": [
+                    {
+                      "id": "IDC_STATIC_MASS",
+                      "type": "Static",
+                      "label": "질량 (m, kg)",
+                      "widthSpec": {
+                        "type": "ratio",
+                        "value": 0.4
+                      }
+                    },
+                    {
+                      "id": "IDC_EDIT_MASS",
+                      "type": "Edit",
+                      "default": "0",
+                      "widthSpec": {
+                        "type": "ratio",
+                        "value": 0.6
+                      }
+                    }
+                  ]
+                },
+                {
+                  "controls": [
+                    {
+                      "id": "IDC_STATIC_ACC",
+                      "type": "Static",
+                      "label": "가속도 (a, m/s²)",
+                      "widthSpec": {
+                        "type": "ratio",
+                        "value": 0.4
+                      }
+                    },
+                    {
+                      "id": "IDC_EDIT_ACC",
+                      "type": "Edit",
+                      "default": "0",
+                      "widthSpec": {
+                        "type": "ratio",
+                        "value": 0.6
+                      }
+                    }
+                  ]
+                },
+                {
+                  "controls": [
+                    {
+                      "id": "IDC_STATIC_FORCE",
+                      "type": "Static",
+                      "label": "힘 (F, N)",
+                      "widthSpec": {
+                        "type": "ratio",
+                        "value": 0.4
+                      }
+                    },
+                    {
+                      "id": "IDC_EDIT_FORCE",
+                      "type": "Edit",
+                      "default": "",
+                      "widthSpec": {
+                        "type": "ratio",
+                        "value": 0.3
+                      }
+                    },
+                    {
+                      "id": "IDC_BUTTON_CALC",
+                      "type": "Button",
+                      "label": "계산",
+                      "onClick": "onCalc",
+                      "widthSpec": {
+                        "type": "ratio",
+                        "value": 0.3
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },

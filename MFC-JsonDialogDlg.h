@@ -47,6 +47,7 @@ private:
 
 	// 실제 핸들러
 	void OnAction(UINT btnID);
+	void OnCalc(UINT btnID);
 
 	std::wstring UTF8ToWide(const std::string& utf8);
 };
