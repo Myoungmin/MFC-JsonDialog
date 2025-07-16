@@ -58,6 +58,7 @@ BOOL CMFCJsonDialogDlg::OnInitDialog()
 	m_namedHandlers[_T("onAction2")] = [this](UINT id) { OnAction(id); };
 	m_namedHandlers[_T("onAction3")] = [this](UINT id) { OnAction(id); };
 	m_namedHandlers[_T("onCalc")] = [this](UINT id) { OnCalc(id); };
+	m_namedHandlers[_T("onSubmit")] = [this](UINT id) { OnSubmit(id); };
 
 	// 2) JSON 파싱 및 UI 생성
 	LoadAndCreateUI();
@@ -366,6 +367,34 @@ void CMFCJsonDialogDlg::OnCalc(UINT btnID)
 		pEditForce->SetWindowText(strForce);
 	}
 }
+
+void CMFCJsonDialogDlg::OnSubmit(UINT btnID)
+{
+	UINT idName = m_idMap[_T("IDC_EDIT_NAME")];
+	UINT idAge = m_idMap[_T("IDC_EDIT_AGE")];
+
+	CString strName, strAge;
+	if (auto pEditName = dynamic_cast<CEdit*>(GetDlgItem(idName))) {
+		pEditName->GetWindowText(strName);
+	}
+	if (auto pEditAge = dynamic_cast<CEdit*>(GetDlgItem(idAge))) {
+		pEditAge->GetWindowText(strAge);
+	}
+
+	CString msg;
+	if (strName.Trim().IsEmpty()) {
+		msg = _T("이름을 입력해 주세요.");
+	}
+	else if (strAge.Trim().IsEmpty()) {
+		msg = _T("나이를 입력해 주세요.");
+	}
+	else {
+		msg.Format(_T("이름: %s\n나이: %s"), strName, strAge);
+	}
+
+	AfxMessageBox(msg);
+}
+
 
 std::wstring CMFCJsonDialogDlg::UTF8ToWide(const std::string& utf8)
 {
